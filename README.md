@@ -40,11 +40,20 @@ Uma API RESTful robusta, desenvolvida em **.NET 8**, projetada para gerenciar um
 ## 🛠️ Tecnologias e Arquitetura
 
 - **Framework Core:** .NET 8, ASP.NET Core Web API
-- **Banco de Dados:** Entity Framework (EF) Core com SQLite (configurado para dev)
+- **Banco de Dados:** Arquitetura adaptável (SQLite em Dev / SQL Server em Produção)
 - **Autenticação:** ASP.NET Core Identity + JWT Bearer
 - **Design de API:** DTOs (Data Transfer Objects) para isolamento de entidades, Controllers (ou Minimal APIs).
 - **Documentação:** Swagger/OpenAPI 
 - **Segurança Adicional:** HTTPS habilitado nativamente, políticas restritas de CORS.
+
+### 🗄️ Configuração de Banco de Dados e Migrations
+A aplicação utiliza uma arquitetura dinâmica configurada no `Program.cs` para definir o provedor de banco de dados com base no ambiente de execução:
+- **Ambiente de Desenvolvimento:** Utiliza **SQLite** para facilitar testes locais e a avaliação do projeto, sem exigir a instalação de infraestrutura externa. As migrations incluídas neste repositório foram geradas especificamente para SQLite.
+- **Ambientes Maiores (Staging/Production):** O código mapeia automaticamente para o **SQL Server** lendo a string de conexão e chaves JWT das Variáveis de Ambiente.
+- **Como rodar com SQL Server:** Para utilizar o SQL Server em sua máquina ou servidor, apague a pasta `Data/Migrations` atual e gere uma nova migration apontando para o ambiente de produção com o comando:
+  ```bash
+  dotnet ef migrations add InitialSqlServer --environment Production
+  ```
 
 ---
 
@@ -95,10 +104,11 @@ cd nome-do-repositorio
 ```
 
 ### Passo 2: Configure os Segredos (User Secrets)
-A aplicação requer uma chave secreta para assinar os tokens JWT. Execute os comandos abaixo na pasta do projeto da API:
+A aplicação requer uma chave secreta para assinar os tokens JWT e uma string de conexão em ambiente de desenvolvimento. Execute os comandos abaixo na pasta do projeto da API:
 ```bash
 dotnet user-secrets init
 dotnet user-secrets set "JwtSettings:Secret" "sua-chave-super-secreta-de-pelo-menos-32-caracteres-aqui"
+dotnet user-secrets set "ConnectionStrings:SqliteConnection" "Data Source=aulasecursos.db"
 ```
 
 ### Passo 3: Banco de Dados e Migrations
@@ -113,6 +123,8 @@ dotnet ef database update
 dotnet run
 ```
 A API estará acessível em `https://localhost:<porta>`.
+
+*Nota: Caso prefira criar o banco de dados antes de iniciar a API, você pode rodar o comando `dotnet ef database update` no terminal.*
 
 ---
 
